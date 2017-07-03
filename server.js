@@ -10,7 +10,8 @@ var express = require('express');
 var app = express();
 
 var multer  = require('multer')
-var upload = multer({ dest: 'uploads/' })
+var storage = multer.memoryStorage()
+var upload = multer({ storage: storage })
 
 
 if (!process.env.DISABLE_XORIGIN) {
@@ -34,7 +35,6 @@ app.route('/_api/package.json')
     fs.readFile(__dirname + '/package.json', function(err, data) {
       if(err) return next(err);
       res.type('txt').send(data.toString());
-      
     });
   });
   
