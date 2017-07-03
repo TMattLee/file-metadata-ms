@@ -44,8 +44,7 @@ app.route('/')
   });
     
 app.post('/filesize', upload.single('uploadFile'), function (req, res, next){
-  console.log(req.file)
-  res.send(req.file)
+  res.send(req.file.size)
 });
 
 // Respond not found to all the wrong routes
