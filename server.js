@@ -8,10 +8,10 @@
 var fs = require('fs');
 var express = require('express');
 var app = express();
-var rand = require("random-key");
-var mongodb = require('mongodb')
-var mongo = mongodb.MongoClient
-var url = process.env.MONGOLAB_URI;
+
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
+
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -43,82 +43,9 @@ app.route('/')
 	  res.sendFile(process.cwd() + '/views/index.html');
   });
     
-app.get('/:docKey', function(req, res) {
-  mongo.connect(url,function(err, db) {
-    if (err) throw err;
-    var collection = db.collection('shorturls');
-   
-    collection.find(
-      {
-        "key": req.params.docKey
-      }, 
-      function(err, result){
-        if (err) throw err;
-        result.toArray(function(err, result) {
-          if(err) throw err;
-          if(!(result[0] === null || result[0] === undefined)){
-            if(result[0].hasOwnProperty("original-url")){
-              res.redirect('https://' + result[0]["original-url"]);
-            }
-          }
-          db.close();
-        });
-      }
-    )
-  });
-});
-    
-app.get('/new/http://:webAddress', function(req,res){
-  console.log(req.params.webAddress)
-  var baseUrl = "https://tmattlee-urlshortener.herokuapp.com/";
-  var newEndPoint = rand.generateBase30(6);
-  var outputUrl = baseUrl + newEndPoint;
-  var doc = {
-    "key":  newEndPoint,
-    "original-url": req.params.webAddress,
-    "short-url": outputUrl
-  }
-  mongo.connect(url, function(err, db) {
-    if (err) throw err
-    var collection = db.collection('shorturls');
-    collection.insert(doc, function(err, data) {
-      if (err) throw err;
-      res.send({
-        "original-url": req.params.webAddress,
-        "short-url": outputUrl
-      });
-      db.close();
-    });
-  });
-});
-
-app.get('/new/https://:webAddress', function(req,res){
-  console.log(req.params.webAddress)
-  var baseUrl = "https://tmattlee-urlshortener.herokuapp.com/";
-  var newEndPoint = rand.generateBase30(6);
-  var outputUrl = baseUrl + newEndPoint;
-  var doc = {
-    "key":  newEndPoint,
-    "original-url": req.params.webAddress,
-    "short-url": outputUrl
-  }
-  mongo.connect(url, function(err, db) {
-    if (err) throw err
-    var collection = db.collection('shorturls');
-    collection.insert(doc, function(err, data) {
-      if (err) throw err;
-      res.send({
-        "original-url": req.params.webAddress,
-        "short-url": outputUrl
-      });
-    });
-    db.close()
-  });
-});
-
-app.get('/new/*', function(req,res){
-  res.send('Invalid Url Format');
-});
+app.post('/filesize', upload.single('newFile'), function (req, res, next){
+  res.send(req.file)
+})
 
 // Respond not found to all the wrong routes
 app.use(function(req, res, next){
