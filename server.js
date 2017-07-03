@@ -9,9 +9,14 @@ var fs = require('fs');
 var express = require('express');
 var app = express();
 
+var maxSize = 50000;
+
 var multer  = require('multer')
 var storage = multer.memoryStorage()
-var upload = multer({ storage: storage })
+var upload = multer({ 
+  storage: storage,
+  limits: { fileSize: maxSize }
+}).single('uploadFile');
 
 
 if (!process.env.DISABLE_XORIGIN) {
@@ -43,10 +48,22 @@ app.route('/')
 	  res.sendFile(process.cwd() + '/views/index.html');
   });
     
-app.post('/filesize', upload.single('uploadFile'), function (req, res, next){
-  res.send({
-    "size": req.file.size
+app.post('/filesize', function (req, res){
+  upload(req, res, function (err) {
+    if (err) {
+      // An error occurred when uploading 
+      if(err.code ==="LIMIT_FILE_SIZE"){
+        res.send("File is too large.");
+        return
+      }
+      else{
+        throw err;
+      }
+    }
+    res.send({
+      "size": req.file.size
     })
+  });
 });
 
 // Respond not found to all the wrong routes
