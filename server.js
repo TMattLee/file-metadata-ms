@@ -43,9 +43,10 @@ app.route('/')
 	  res.sendFile(process.cwd() + '/views/index.html');
   });
     
-app.post('/filesize', upload.single('newFile'), function (req, res, next){
+app.post('/filesize', upload.single('uploadFile'), function (req, res, next){
+  console.log(req.file)
   res.send(req.file)
-})
+});
 
 // Respond not found to all the wrong routes
 app.use(function(req, res, next){
